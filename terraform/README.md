@@ -152,20 +152,10 @@ The `terraform.yml` in `.github/workflows/` should handle:
 
 ---
 
-## ✅ GitHub Workflow Badge
-
-You can add this to the top of your README:
-
-```markdown
-![Terraform CI](https://github.com/<your-username>/<your-repo>/actions/workflows/terraform.yml/badge.svg)
-```
-
----
-
 ## 👨‍💻 Author
 
 Built with 💻 and ☕ by Yashika Maheshwari
-🔗 [LinkedIn](https://www.linkedin.com/in/your-link)
+🔗 [LinkedIn](https://www.linkedin.com/in/yashika-maheshwari/))
 
 ---
 
