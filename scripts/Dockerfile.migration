@@ -1,5 +1,5 @@
-# Use Node.js 18 Alpine as base
-FROM node:18-alpine
+# --- Stage 1: Build dependencies and node_modules ---
+FROM node:18-alpine AS builder
 
 # Set working directory
 WORKDIR /app
@@ -18,8 +18,29 @@ COPY .db ./.db
 RUN npm install
 RUN npm install --save-dev @types/mongoose
 
+# --- Stage 2: Final lightweigh Image ---
+FROM node:18-alpine
+
+# Create a Non-Root user and Group
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+
+# Set working directory
+WORKDIR /app
+
+# Copy node_modules and scripts from builder
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/scripts ./scripts
+COPY --from=builder /app/.db ./.db
+COPY --from=builder /app/tsconfig.json ./tsconfig.json
+
 # Set environment variables
 ENV NODE_ENV=development
+
+# Change ownership (optional, safer)
+RUN chown -R appuser:appgroup /app
+
+# Switch to non-root user
+USER appuser
 
 # Command to run migration
 CMD ["npx", "ts-node", "--project", "scripts/tsconfig.json", "scripts/migrate-data.ts"]

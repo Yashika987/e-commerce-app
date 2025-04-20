@@ -22,6 +22,9 @@ RUN npm run build
 # Stage 2: Production Stage
 FROM node:18-alpine AS runner
 
+# Create a Non-Root user and Group
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+
 # Set working directory
 WORKDIR /app
 
@@ -33,6 +36,9 @@ COPY --from=builder /app/public ./public
 # Set environment variables
 ENV NODE_ENV=production
 ENV PORT=3000
+
+# Change ownership (optional, safer)
+RUN chown -R appuser:appgroup /app
 
 # Expose the port the app runs on
 EXPOSE 3000
