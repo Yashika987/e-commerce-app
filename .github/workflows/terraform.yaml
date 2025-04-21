@@ -44,8 +44,8 @@ jobs:
 
     env:
       BRANCH_NAME: ${{ github.ref_name }}
-      ENVIRONMENT: ${{ startsWith(github.ref_name, 'feature/') || github.ref_name == 'development' && 'Development' || (github.ref_name == 'main' || github.ref_name == 'master') && 'Production' }}
-      TFVARS_FILE: ${{ github.ref_name == 'development' && 'dev.tfvars' || (github.ref_name == 'main' || github.ref_name == 'master') && 'prod.tfvars' || 'dev.tfvars' }}
+      ENVIRONMENT: ${{ startsWith(github.ref_name, 'feature/') || github.ref_name == 'development' && 'Development' || (github.ref_name == 'main' || github.ref_name == 'master') && 'Production' || 'Development' }}
+      TFVARS_FILE: ${{ github.ref_name == 'development' && 'dev.tfvars' || github.ref_name == 'main' || github.ref_name == 'master' && 'prod.tfvars' || 'dev.tfvars' }}
 
     steps:
     - name: Checkout Code
