@@ -20,7 +20,7 @@ resource "aws_iam_role" "github_oidc_role" {
   })
 }
 
-#Attach IAM Policy to the Role
+# Attach IAM Policy to the Role
 resource "aws_iam_role_policy" "github_oidc_policy" {
   name = "GitHubActionsOIDCPolicy"
   role = aws_iam_role.github_oidc_role.id

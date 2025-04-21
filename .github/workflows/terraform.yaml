@@ -44,11 +44,8 @@ jobs:
 
     env:
       BRANCH_NAME: ${{ github.ref_name }}
-      ENVIRONMENT: ${{ 
-        startsWith(github.ref_name, 'feature/') || github.ref_name == 'development' 
-        && 'Development' || 
-        (github.ref_name == 'main' || github.ref_name == 'master') 
-        && 'Production' }}
+      ENVIRONMENT: ${{ startsWith(github.ref_name, 'feature/') || github.ref_name == 'development' && 'Development' || (github.ref_name == 'main' || github.ref_name == 'master') && 'Production' }}
+      TFVARS_FILE: ${{ github.ref_name == 'development' && 'dev.tfvars' || (github.ref_name == 'main' || github.ref_name == 'master') && 'prod.tfvars' || 'dev.tfvars' }}
 
     steps:
     - name: Checkout Code
@@ -58,7 +55,7 @@ jobs:
       uses: aws-actions/configure-aws-credentials@v2
       with:
         role-to-assume: arn:aws:iam::123456789012:role/GitHubActionsOIDCRole
-        aws-region: us-west-2
+        aws-region: us-east-1
 
     - name: Setup Terraform
       uses: hashicorp/setup-terraform@v3
@@ -67,22 +64,28 @@ jobs:
 
     - name: Terraform Init
       run: |
-        echo "Initializing for environment: $ENVIRONMENT"
-        terraform init -backend-config="environments/$ENVIRONMENT/backend.tf"
+        echo "Initializing Terraform for $ENVIRONMENT environment"
+        terraform init
+      working-directory: environments/${{ env.ENVIRONMENT }}
 
     - name: Terraform Format Check
       run: terraform fmt -check
+      working-directory: environments/${{ env.ENVIRONMENT }}
 
     - name: Terraform Validate
       run: terraform validate
+      working-directory: environments/${{ env.ENVIRONMENT }}
 
     - name: Terraform Plan
-      run: terraform plan -var-file="environments/${{ env.ENVIRONMENT }}/$(echo $ENVIRONMENT | tr '[:upper:]' '[:lower:]').tfvars" -out=tfplan
+      run: terraform plan -var-file="${{ env.TFVARS_FILE }}" -out=tfplan
+      working-directory: environments/${{ env.ENVIRONMENT }}
 
     - name: Terraform Apply
       if: ${{ github.event.inputs.apply == 'true' && github.event.inputs.destroy != 'true' }}
       run: terraform apply -auto-approve tfplan
+      working-directory: environments/${{ env.ENVIRONMENT }}
 
     - name: Terraform Destroy
       if: ${{ github.event.inputs.destroy == 'true' }}
-      run: terraform destroy -auto-approve -var-file="environments/${{ env.ENVIRONMENT }}/$(echo $ENVIRONMENT | tr '[:upper:]' '[:lower:]').tfvars"
+      run: terraform destroy -auto-approve -var-file="${{ env.TFVARS_FILE }}"
+      working-directory: environments/${{ env.ENVIRONMENT }}
